@@ -145,6 +145,8 @@ export class ZarrLayer {
 
     this.loaders = {};
     this.tiles = {};
+    this.maxZoom = 4; // Default value, will be updated from Zarr metadata
+    this.fillValue = 0; // Default value, will be updated from Zarr metadata
 
     this.frameBuffers = { current: null, next: null };
     this.isUpdating = false;
