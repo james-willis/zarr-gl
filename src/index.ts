@@ -190,7 +190,7 @@ export class ZarrLayer {
   }
 
   getVisibleTiles(): TileTuple[] {
-    const zoom = zoomToLevel(this.map.getZoom(), 4); // TODO use max zoom level from Zarr
+    const zoom = zoomToLevel(this.map.getZoom(), this.maxZoom);
 
     // If we don't have a loader for this zoom level just give up...
     if (!this.loaders[zoom]) return [];
