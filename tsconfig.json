@@ -23,6 +23,6 @@
     "declaration": true,
     "removeComments": true,
     "lib": ["esnext", "dom", "dom.iterable"],
-    "types": [ "node" ]
+    "types": ["node"]
   }
 }
