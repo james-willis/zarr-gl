@@ -478,8 +478,10 @@ export class ZarrLayer {
       // These are the vertex and pixCoord that were buffered+bound
       // further up. For some reason this has to happen _after_ the
       // texture stuff??
+      gl.bindBuffer(gl.ARRAY_BUFFER, tile.vertexBuffer);
       gl.enableVertexAttribArray(this.vertexLoc);
       gl.vertexAttribPointer(this.vertexLoc, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, tile.pixCoordBuffer);
       gl.enableVertexAttribArray(this.pixCoordLoc);
       gl.vertexAttribPointer(this.pixCoordLoc, 2, gl.FLOAT, false, 0, 0);
 
