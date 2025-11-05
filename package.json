@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/carderne/zarr-gl",
   "dependencies": {
+    "buffer": "^6.0.3",
     "zarr-js": "^3.3.0"
   },
   "devDependencies": {

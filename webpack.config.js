@@ -1,5 +1,9 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import { createRequire } from "module";
+import webpack from "webpack";
+
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -21,8 +25,15 @@ const webpackConfig = {
   },
   resolve: {
     extensions: [".ts", ".glsl"],
-    fallback: { buffer: false },
+    fallback: {
+      buffer: require.resolve("buffer/"),
+    },
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"],
+    }),
+  ],
   experiments: {
     outputModule: true,
   },
