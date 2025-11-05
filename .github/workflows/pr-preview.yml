@@ -71,12 +71,11 @@ jobs:
             
             You can test this PR by using the following import:
             
-            ### jsDelivr CDN (recommended)
             ${'```'}js
-            import { ZarrLayer } from "https://cdn.jsdelivr.net/gh/${owner}/${repo}@gh-pages/pr-${prNumber}/zarr-gl.js/+esm";
+            import { ZarrLayer } from "https://cdn.jsdelivr.net/gh/${owner}/${repo}@gh-pages/pr-${prNumber}/zarr-gl.js";
             ${'```'}
             
-            **Note:** The \`/+esm\` suffix tells jsDelivr to serve the file as an ESM module with proper transformations, just like the npm version.
+            **Note:** The built file is already an ES module (configured in webpack), so it works directly without needing CDN transformations.
             
             ---
             *This preview will be automatically updated when you push new commits to this PR.*`;
