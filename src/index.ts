@@ -26,7 +26,7 @@ type RGB = [number, number, number];
 
 // TODO handle different tile/chunk shapes
 const TILE_WIDTH = 128;
-const TILE_HEIGHT = 128;
+const TILE_HEIGHT = 150; //arbirary change to have a commit
 
 export interface ZarrLayerProps {
   map: Map;
