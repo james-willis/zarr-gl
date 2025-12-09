@@ -1,4 +1,4 @@
-import type { Map } from "mapbox-gl";
+import type { Map, RequestParameters } from "mapbox-gl";
 import { TileTuple } from "./utils";
 import type { Loader } from "zarr-js";
 import Tile from "./tile";
@@ -16,7 +16,7 @@ export interface ZarrLayerProps {
     opacity?: number;
     minRenderZoom?: number;
     invalidate?: () => void;
-    transformRequest?: (url: string) => string;
+    transformRequest?: (url: string) => RequestParameters;
 }
 export declare class ZarrLayer {
     type: "custom";
@@ -28,7 +28,7 @@ export declare class ZarrLayer {
     variable: string;
     selector: Record<string, number>;
     invalidate: () => void;
-    transformRequest?: (url: string) => string;
+    transformRequest?: (url: string) => RequestParameters;
     cmapLength: number;
     cmap: Float32Array;
     vmin: number;
