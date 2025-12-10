@@ -342,6 +342,9 @@ export class ZarrLayer {
     // Clean up shaders
     gl.deleteShader(renderVertShader);
     gl.deleteShader(renderFragShader);
+
+    // Trigger initial data load
+    await this.prefetchTileData();
   }
 
   prerender(gl: WebGL2RenderingContext, matrix: number[]) {
