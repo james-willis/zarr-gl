@@ -408,6 +408,7 @@ export class ZarrLayer {
     // and all sorts of weird stuff happens
     this.prefetchTileData();
 
+    //comment to create a diff
     for (const tileTuple of tiles) {
       const tileKey = tileToKey(tileTuple);
       const tile = this.tiles[tileKey];
