@@ -182,13 +182,13 @@ export class ZarrLayer {
 
   async prefetchTileData() {
     const tiles = this.getVisibleTiles();
-    for (const tiletuple of tiles) {
-      const tilekey = tileToKey(tiletuple);
-      const tile = this.tiles[tilekey];
-      if (tile) {
-        await tile.fetchData(this.selector);
-      }
-    }
+    await Promise.all(
+      tiles.map((tiletuple) => {
+        const tilekey = tileToKey(tiletuple);
+        const tile = this.tiles[tilekey];
+        return tile ? tile.fetchData(this.selector) : Promise.resolve();
+      }),
+    );
   }
 
   getVisibleTiles(): TileTuple[] {
@@ -436,6 +436,7 @@ export class ZarrLayer {
     // by the next time we come around??
     // This is because Mapbox/WebGL doesn't like it if we await here
     // and all sorts of weird stuff happens
+    // TODO it seems like the fact we are hoping that loading finishes in time is causing the tile rendering only on click issues in GH issue 14
     this.prefetchTileData();
 
     for (const tileTuple of tiles) {
