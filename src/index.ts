@@ -182,16 +182,19 @@ export class ZarrLayer {
 
   async prefetchTileData() {
     const tiles = this.getVisibleTiles();
-    let anyLoaded = false;
-    for (const tiletuple of tiles) {
-      const tilekey = tileToKey(tiletuple);
-      const tile = this.tiles[tilekey];
-      if (tile && !tile.data) {
-        await tile.fetchData(this.selector);
-        anyLoaded = true;
-      }
-    }
-    if (anyLoaded) {
+    const fetchPromises = tiles
+      .map((tiletuple) => {
+        const tilekey = tileToKey(tiletuple);
+        const tile = this.tiles[tilekey];
+        if (tile && !tile.data) {
+          return tile.fetchData(this.selector);
+        }
+        return null;
+      })
+      .filter((p) => p !== null);
+
+    if (fetchPromises.length > 0) {
+      await Promise.all(fetchPromises);
       this.invalidate();
     }
   }
