@@ -16,7 +16,7 @@ export interface ZarrLayerProps {
     opacity?: number;
     minRenderZoom?: number;
     invalidate?: () => void;
-    transformRequest?: (url: string) => RequestParameters;
+    transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>;
 }
 export declare class ZarrLayer {
     type: "custom";
@@ -28,7 +28,7 @@ export declare class ZarrLayer {
     variable: string;
     selector: Record<string, number>;
     invalidate: () => void;
-    transformRequest?: (url: string) => RequestParameters;
+    transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>;
     cmapLength: number;
     cmap: Float32Array;
     vmin: number;
