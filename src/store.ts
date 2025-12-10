@@ -6,6 +6,44 @@
 
 import zarr from "zarr-js";
 import type { Loader, Metadata, Multiscale } from "zarr-js";
+import type { RequestParameters } from "mapbox-gl";
+
+const createFetchFn = (
+  transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>,
+): typeof window.fetch => {
+  if (!transformRequest) {
+    return window.fetch;
+  }
+
+  return (async (input, init) => {
+    const url =
+      typeof input === "string" ? input : input instanceof Request ? input.url : input.toString();
+    const requestParams = await transformRequest(url);
+
+    // Warn about unsupported parameters
+    if (requestParams.method && requestParams.method !== "GET") {
+      console.warn(
+        `zarr-gl: transformRequest returned method "${requestParams.method}" but only GET requests are used for Zarr data fetching`,
+      );
+    }
+    if (requestParams.body) {
+      console.warn(
+        "zarr-gl: transformRequest returned a body parameter, but it will be ignored (Zarr uses GET requests)",
+      );
+    }
+    if (requestParams.type) {
+      console.warn(
+        "zarr-gl: transformRequest returned a type parameter, but it will be ignored (response type is handled internally)",
+      );
+    }
+
+    return window.fetch(requestParams.url, {
+      ...init,
+      headers: requestParams.headers,
+      credentials: requestParams.credentials,
+    });
+  }) as typeof window.fetch;
+};
 
 const getPyramidMetadata = (multiscales: Multiscale[]) => {
   const datasets = multiscales[0]?.datasets;
@@ -22,10 +60,16 @@ const getPyramidMetadata = (multiscales: Multiscale[]) => {
   return { levels, maxZoom, tileSize, crs };
 };
 
-const loadZarrV2 = async (source: string, variable: string) => {
+const loadZarrV2 = async (
+  source: string,
+  variable: string,
+  transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>,
+) => {
+  const fetchFn = createFetchFn(transformRequest);
+
   const [loaders, metadata] = await new Promise<[Record<string, Loader>, Metadata]>(
     (resolve, reject) => {
-      zarr(window.fetch, "v2").openGroup(
+      zarr(fetchFn, "v2").openGroup(
         source,
         (err: Error, l: Record<string, Loader>, m: Metadata) => {
           if (err) reject(err);
@@ -97,11 +141,17 @@ const loadZarrV2 = async (source: string, variable: string) => {
   };
 };
 
-const loadZarrV3 = async (source: string, variable: string) => {
-  const metadata = await fetch(`${source}/zarr.json`).then((res) => res.json());
+const loadZarrV3 = async (
+  source: string,
+  variable: string,
+  transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>,
+) => {
+  const fetchFn = createFetchFn(transformRequest);
+
+  const metadata = await fetchFn(`${source}/zarr.json`).then((res) => res.json());
   const { levels, maxZoom, tileSize, crs } = getPyramidMetadata(metadata.attributes.multiscales);
 
-  const arrayMetadata = await fetch(`${source}/${levels[0]}/${variable}/zarr.json`).then((res) =>
+  const arrayMetadata = await fetchFn(`${source}/${levels[0]}/${variable}/zarr.json`).then((res) =>
     res.json(),
   );
 
@@ -118,7 +168,7 @@ const loadZarrV3 = async (source: string, variable: string) => {
       levels.map(
         (level) =>
           new Promise<[string, Loader]>((resolve, reject) => {
-            zarr(window.fetch, "v3").open(
+            zarr(fetchFn, "v3").open(
               `${source}/${level}/${variable}`,
               (err: Error, get: Loader) => {
                 if (err) {
@@ -138,22 +188,19 @@ const loadZarrV3 = async (source: string, variable: string) => {
       dimensions.map(
         (dim) =>
           new Promise<[string, number[]]>((resolve, reject) => {
-            zarr(window.fetch, "v3").open(
-              `${source}/${levels[0]}/${dim}`,
-              (err: Error, get: Loader) => {
+            zarr(fetchFn, "v3").open(`${source}/${levels[0]}/${dim}`, (err: Error, get: Loader) => {
+              if (err) {
+                reject(err);
+                return;
+              }
+              get([0], (err, chunk) => {
                 if (err) {
                   reject(err);
                   return;
                 }
-                get([0], (err, chunk) => {
-                  if (err) {
-                    reject(err);
-                    return;
-                  }
-                  resolve([dim, Array.from(chunk.data as Float32Array)]);
-                });
-              },
-            );
+                resolve([dim, Array.from(chunk.data as Float32Array)]);
+              });
+            });
           }),
       ),
     ),
@@ -177,8 +224,12 @@ const loadZarr = async (
   source: string,
   variable: string,
   version: "v2" | "v3",
+  transformRequest?: (url: string) => RequestParameters | Promise<RequestParameters>,
 ): ReturnType<typeof loadZarrV2> => {
-  const res = version === "v2" ? loadZarrV2(source, variable) : loadZarrV3(source, variable);
+  const res =
+    version === "v2"
+      ? loadZarrV2(source, variable, transformRequest)
+      : loadZarrV3(source, variable, transformRequest);
   return res;
 };
 
