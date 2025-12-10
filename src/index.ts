@@ -182,12 +182,17 @@ export class ZarrLayer {
 
   async prefetchTileData() {
     const tiles = this.getVisibleTiles();
+    let anyLoaded = false;
     for (const tiletuple of tiles) {
       const tilekey = tileToKey(tiletuple);
       const tile = this.tiles[tilekey];
-      if (tile) {
+      if (tile && !tile.data) {
         await tile.fetchData(this.selector);
+        anyLoaded = true;
       }
+    }
+    if (anyLoaded) {
+      this.invalidate();
     }
   }
 
@@ -362,7 +367,7 @@ export class ZarrLayer {
 
     // Call useProgram once right at the start
     gl.clearColor(0, 0, 0, 0);
-    //gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
