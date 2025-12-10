@@ -24,6 +24,7 @@ declare class Tile {
     x: number;
     y: number;
     loading: boolean;
+    loadingPromise: Promise<Float32Array> | null;
     tileTexture: WebGLTexture;
     vertexBuffer: WebGLBuffer;
     pixCoordBuffer: WebGLBuffer;
